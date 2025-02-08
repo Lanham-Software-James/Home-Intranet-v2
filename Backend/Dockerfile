@@ -13,7 +13,7 @@ COPY go.sum .
 RUN --mount=type=ssh go mod download
 
 COPY ./ ./
-RUN go build -o ./tmp/main ./cmd/library/main.go
+RUN go build -o ./tmp/main ./cmd/main.go
 
 # Development stage
 FROM build AS dev
