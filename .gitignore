@@ -5,6 +5,7 @@
 .wrangler
 */.svelte-kit
 /build
+*/tmp
 
 # OS
 .DS_Store
@@ -15,6 +16,7 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.test
+SSL
 
 # Vite
 vite.config.js.timestamp-*
