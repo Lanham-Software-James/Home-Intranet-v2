@@ -25,6 +25,9 @@ services:
     container_name: home-intranet-backend
     environment:
       SECRET: ${SECRET}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST:      ${DB_HOST}
       # DEBUG: ${DEBUG}
       # ALLOWED_HOSTS: ${ALLOWED_HOSTS}
       # SERVER_HOST: ${SERVER_HOST}
