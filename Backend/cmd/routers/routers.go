@@ -26,4 +26,5 @@ func registerMiddleware(router *chi.Mux) {
 
 func registerRoutes(router *chi.Mux) {
 	RootRoutes(router)
+	LibraryRoutes(router)
 }
