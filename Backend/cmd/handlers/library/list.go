@@ -17,14 +17,19 @@ import (
 func (handler Handler) ListBooks(w http.ResponseWriter, request *http.Request) {
 	values := request.URL.Query()
 
-	sortString := strings.ToLower(values.Get("sort"))
+	sortColumn := strings.ToLower(values.Get("sort-col"))
+	sortDirectionString := strings.ToLower(values.Get("sort-dir"))
 	offsetString := values.Get("offset")
 	limitString := values.Get("limit")
 
 	// TODO: Handle filter, search
 
+	if sortColumn == "" {
+		sortColumn = "title"
+	}
+
 	sort := 1
-	if sortString == "desc" {
+	if sortDirectionString == "desc" {
 		sort = -1
 	}
 
@@ -50,7 +55,7 @@ func (handler Handler) ListBooks(w http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	data, err := handler.Repository.List(request.Context(), &models.Book{}, bson.D{}, bson.D{{"title", sort}}, offset, limit)
+	data, err := handler.Repository.List(request.Context(), &models.Book{}, bson.D{}, bson.D{{Key: sortColumn, Value: sort}}, offset, limit)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Issue retriving books. \nError: %s", err.Error()))
 		response.InternalServerError(w, err)
