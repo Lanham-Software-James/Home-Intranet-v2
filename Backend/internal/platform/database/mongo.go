@@ -141,9 +141,15 @@ func (db *Repository) Update(ctx context.Context, model interface{}, filter inte
 }
 
 // Delete is used to delete a document in specified collection
-func (m *Model) Delete(ctx context.Context, db *mongo.Database, collectionName string, filter interface{}) error {
-	collection := db.Collection(collectionName)
-	_, err := collection.DeleteOne(ctx, filter)
+func (db *Repository) Delete(ctx context.Context, model interface{}, filter interface{}) error {
+	collectionName, err := getCollectionName(model)
+	if err != nil {
+		return err
+	}
+
+	collection := db.Mongo.Collection(collectionName)
+
+	_, err = collection.DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}
