@@ -2,10 +2,10 @@
 package repository
 
 import (
+	"Home-Intranet-v2-Backend/internal/platform/logger"
 	"Home-Intranet-v2-Backend/internal/platform/pluralizer"
 	"context"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"reflect"
@@ -30,12 +30,12 @@ func Connect() (*mongo.Database, error) {
 	client, err := mongo.Connect(context.Background(), clientOptions)
 
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(fmt.Sprintf("Issue connecting to Mongo Client:\n %+v", err))
 	}
 
 	err = client.Ping(context.Background(), nil)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(fmt.Sprintf("Issue verifying Mongo Client connection:\n %+v", err))
 	}
 
 	return client.Database(database), nil
