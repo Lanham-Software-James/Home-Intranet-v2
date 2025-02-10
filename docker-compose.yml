@@ -24,15 +24,16 @@ services:
       target: dev
     container_name: home-intranet-backend
     environment:
-      SECRET: ${SECRET}
+
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST:      ${DB_HOST}
-      DB_NAME: ${DB_NAME}
-      # DEBUG: ${DEBUG}
-      # ALLOWED_HOSTS: ${ALLOWED_HOSTS}
-      # SERVER_HOST: ${SERVER_HOST}
-      # SERVER_PORT: ${SERVER_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_NAME: $DB_NAME}
+
+      BACKEND_SECRET: ${SECRET}
+      BACKEND_HOST: ${BACKEND_HOST}
+      BACKEND_ALLOWED_HOSTS: ${BACKEND_ALLOWED_HOSTS}
+
     depends_on:
       - db
     networks:

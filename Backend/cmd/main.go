@@ -2,16 +2,13 @@
 package main
 
 import (
-	"fmt"
+	"Home-Intranet-v2-Backend/cmd/routers"
+	"os"
+
 	"net/http"
 )
 
 func main() {
-
-	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hello, World!")
-	})
-
-	// Run on localhost:3000
-	http.ListenAndServe(":3000", h)
+	router := routers.SetupRouter()
+	http.ListenAndServe(os.Getenv("BACKEND_HOST"), router)
 }
