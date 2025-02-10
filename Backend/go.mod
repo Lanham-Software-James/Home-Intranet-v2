@@ -3,6 +3,7 @@ module Home-Intranet-v2-Backend
 go 1.23.6
 
 require (
+	github.com/gertd/go-pluralize v0.2.1
 	go.mongodb.org/mongo-driver v1.17.2
 	go.uber.org/zap v1.27.0
 )
