@@ -79,11 +79,15 @@ func (db *Repository) Create(ctx context.Context, model interface{}) error {
 }
 
 // Read is used to find one document based on a filter
-func (m *Model) Read(ctx context.Context, db *mongo.Database, collectionName string, filter interface{}, result interface{}) error {
-	collection := db.Collection(collectionName)
-
-	err := collection.FindOne(ctx, filter).Decode(result)
+func (db *Repository) Read(ctx context.Context, model interface{}, filter interface{}, result interface{}) error {
+	collectionName, err := getCollectionName(model)
 	if err != nil {
+		return err
+	}
+
+	collection := db.Mongo.Collection(collectionName)
+
+	if err = collection.FindOne(ctx, filter).Decode(result); err != nil {
 		return err
 	}
 
