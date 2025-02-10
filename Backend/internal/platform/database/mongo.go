@@ -122,12 +122,17 @@ func (db *Repository) List(ctx context.Context, model interface{}, filter interf
 }
 
 // Update is used to update a document in specified collection
-func (m *Model) Update(ctx context.Context, db *mongo.Database, collectionName string, filter interface{}, update interface{}) error {
-	collection := db.Collection(collectionName)
+func (db *Repository) Update(ctx context.Context, model interface{}, filter interface{}, update interface{}) error {
+	collectionName, err := getCollectionName(model)
+	if err != nil {
+		return err
+	}
 
-	m.UpdatedAt = time.Now()
+	collection := db.Mongo.Collection(collectionName)
 
-	_, err := collection.UpdateOne(ctx, filter, update)
+	setDefaultFields(model, false)
+
+	_, err = collection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
