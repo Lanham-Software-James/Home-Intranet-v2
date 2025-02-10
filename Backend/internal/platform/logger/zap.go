@@ -10,6 +10,8 @@ type Logger struct {
 	zap *zap.Logger
 }
 
+var logger, _ = NewLogger(false)
+
 func NewLogger(production bool) (*Logger, error) {
 	var zapLogger *zap.Logger
 	var err error
@@ -27,34 +29,34 @@ func NewLogger(production bool) (*Logger, error) {
 	return &Logger{zap: zapLogger}, nil
 }
 
-func (l *Logger) Debug(msg string, fields ...zap.Field) {
-	l.zap.Debug(msg, fields...)
+func Debug(msg string, fields ...zap.Field) {
+	logger.zap.Debug(msg, fields...)
 }
 
-func (l *Logger) Info(msg string, fields ...zap.Field) {
-	l.zap.Info(msg, fields...)
+func Info(msg string, fields ...zap.Field) {
+	logger.zap.Info(msg, fields...)
 }
 
-func (l *Logger) Warn(msg string, fields ...zap.Field) {
-	l.zap.Warn(msg, fields...)
+func Warn(msg string, fields ...zap.Field) {
+	logger.zap.Warn(msg, fields...)
 }
 
-func (l *Logger) Error(msg string, fields ...zap.Field) {
-	l.zap.Error(msg, fields...)
+func Error(msg string, fields ...zap.Field) {
+	logger.zap.Error(msg, fields...)
 }
 
-func (l *Logger) Fatal(msg string, fields ...zap.Field) {
-	l.zap.Fatal(msg, fields...)
+func Fatal(msg string, fields ...zap.Field) {
+	logger.zap.Fatal(msg, fields...)
 }
 
-func (l *Logger) WithFields(fields ...zap.Field) *Logger {
-	return &Logger{zap: l.zap.With(fields...)}
+func WithFields(fields ...zap.Field) *Logger {
+	return &Logger{zap: logger.zap.With(fields...)}
 }
 
-func (l *Logger) SetLevel(level zapcore.Level) {
-	l.zap.Core().Enabled(level)
+func SetLevel(level zapcore.Level) {
+	logger.zap.Core().Enabled(level)
 }
 
-func (l *Logger) Sync() error {
-	return l.zap.Sync()
+func Sync() error {
+	return logger.zap.Sync()
 }
