@@ -2,11 +2,14 @@
 package database
 
 import (
+	"Home-Intranet-v2-Backend/internal/platform/pluralizer"
 	"context"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
+	"reflect"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,10 +18,11 @@ import (
 )
 
 // Connect is used to create a new connection to our MongoDB
-func Connect() (*mongo.Client, error) {
+func Connect() (*mongo.Database, error) {
 	username := os.Getenv("DB_USERNAME")
 	password := url.QueryEscape(os.Getenv("DB_PASSWORD"))
 	host := os.Getenv("DB_HOST")
+	database := os.Getenv("DB_NAME")
 
 	uri := fmt.Sprintf(`mongodb://%s:%s@%s:27017/?retryWrites=true&w=majority`, username, password, host)
 
@@ -34,23 +38,43 @@ func Connect() (*mongo.Client, error) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Successfully connected to MongoDB")
-	return client, nil
+	return client.Database(database), nil
 }
 
 // Create is used to insert a new document into a collection
-func (m *Model) Create(ctx context.Context, db *mongo.Database, collectionName string, model interface{}) error {
-	collection := db.Collection(collectionName)
+func (db *Repository) Create(ctx context.Context, model interface{}) error {
+	collectionName, err := getCollectionName(model)
+	if err != nil {
+		return err
+	}
 
-	m.CreatedAt = time.Now()
-	m.UpdatedAt = time.Now()
+	collection := db.Mongo.Collection(collectionName)
+
+	value := reflect.ValueOf(model)
+	if value.Kind() == reflect.Ptr {
+		value = value.Elem()
+	}
+
+	if value.Kind() != reflect.Struct {
+		return fmt.Errorf("model must be a struct or pointer to struct")
+	}
+
+	idField := value.FieldByName("ID")
+
+	model, err = setDefaultFields(model, true)
+	if err != nil {
+		return err
+	}
 
 	res, err := collection.InsertOne(ctx, model)
 	if err != nil {
 		return err
 	}
 
-	m.ID = res.InsertedID.(primitive.ObjectID)
+	if idField.IsValid() && idField.CanSet() {
+		idField.Set(reflect.ValueOf(res.InsertedID.(primitive.ObjectID)))
+	}
+
 	return nil
 }
 
@@ -111,4 +135,53 @@ func (m *Model) Delete(ctx context.Context, db *mongo.Database, collectionName s
 	}
 
 	return nil
+}
+
+func getCollectionName(model interface{}) (string, error) {
+
+	if reflect.TypeOf(model).Kind() != reflect.Ptr {
+		return "", fmt.Errorf("model not a pointer")
+	}
+
+	elemType := reflect.TypeOf(model).Elem()
+
+	if elemType.Kind() != reflect.Struct {
+		return "", fmt.Errorf("model not a struct")
+	}
+
+	modelName := reflect.TypeOf(model).Elem().Name()
+	modelName = strings.ToLower(modelName)
+
+	collectionName := pluralizer.ToPlural(modelName)
+
+	return collectionName, nil
+}
+
+func setDefaultFields(model interface{}, setCreate bool) (interface{}, error) {
+
+	now := time.Now().UTC()
+
+	value := reflect.ValueOf(model)
+	if value.Kind() == reflect.Ptr {
+		value = value.Elem()
+	}
+
+	if value.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("model must be a struct or pointer to struct")
+	}
+
+	if setCreate {
+
+		createdAtField := value.FieldByName("CreatedAt")
+		if createdAtField.IsValid() && createdAtField.CanSet() {
+			createdAtField.Set(reflect.ValueOf(now))
+		}
+	}
+
+	updatedAtField := value.FieldByName("UpdatedAt")
+	if updatedAtField.IsValid() && updatedAtField.CanSet() {
+		updatedAtField.Set(reflect.ValueOf(now))
+	}
+
+	return model, nil
 }
