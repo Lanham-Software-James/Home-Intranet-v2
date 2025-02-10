@@ -91,13 +91,18 @@ func (m *Model) Read(ctx context.Context, db *mongo.Database, collectionName str
 }
 
 // List is used to list all documents in a collection
-func (m *Model) List(ctx context.Context, db *mongo.Database, collectionName string, filter interface{}, offset int64, limit int64, sort interface{}) ([]primitive.D, error) {
+func (db *Repository) List(ctx context.Context, model interface{}, filter interface{}, sort interface{}, offset int64, limit int64) ([]primitive.D, error) {
+	collectionName, err := getCollectionName(model)
+	if err != nil {
+		return nil, err
+	}
+
 	opts := options.Find()
 	opts.SetSkip(offset)
 	opts.SetLimit(limit)
 	opts.SetSort(sort)
 
-	collection := db.Collection(collectionName)
+	collection := db.Mongo.Collection(collectionName)
 
 	cursor, err := collection.Find(ctx, filter, opts)
 	if err != nil {
