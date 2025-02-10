@@ -1,4 +1,5 @@
-package database
+// Package repository servers as the wrapper for our data persistance packages
+package repository
 
 import "go.mongodb.org/mongo-driver/mongo"
 

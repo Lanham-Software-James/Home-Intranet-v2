@@ -1,5 +1,5 @@
-// Package database servers as the wrapper to our Mongo DB Driver
-package database
+// Package repository servers as the wrapper for our data persistance packages
+package repository
 
 import (
 	"Home-Intranet-v2-Backend/internal/platform/pluralizer"
