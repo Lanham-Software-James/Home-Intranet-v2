@@ -4,6 +4,7 @@ package config
 import (
 	"net/url"
 	"os"
+	"strconv"
 )
 
 // GetDBUserName returns the DB_USERNAME env configuration
@@ -31,7 +32,17 @@ func GetServerHost() string {
 	return os.Getenv("BACKEND_HOST")
 }
 
-// GetAllowedHosts returns the ALLOWED_HOSTS env configuration
+// GetAllowedHosts returns the BACKEND_ALLOWED_HOSTS env configuration
 func GetAllowedHosts() string {
-	return os.Getenv("ALLOWED_HOSTS")
+	return os.Getenv("BACKEND_ALLOWED_HOSTS")
+}
+
+// GetProductionFlag returns the BACKEND_PROD_FLAG env configuration
+func GetProductionFlag() bool {
+	flag, err := strconv.ParseBool(os.Getenv("BACKEND_PROD_FLAG"))
+	if err != nil {
+		panic("BACKEND_PROD_FLAG must be boolean value")
+	}
+
+	return flag
 }

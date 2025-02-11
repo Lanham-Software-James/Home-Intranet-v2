@@ -2,19 +2,18 @@
 package logger
 
 import (
+	"Home-Intranet-v2-Backend/internal/platform/config"
+
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
-type Logger struct {
-	zap *zap.Logger
-}
+var logger, _ = newLogger()
 
-var logger, _ = NewLogger(false)
-
-func NewLogger(production bool) (*Logger, error) {
+func newLogger() (*zap.Logger, error) {
 	var zapLogger *zap.Logger
 	var err error
+
+	production := config.GetProductionFlag()
 
 	if production {
 		zapLogger, err = zap.NewProduction()
@@ -26,37 +25,39 @@ func NewLogger(production bool) (*Logger, error) {
 		return nil, err
 	}
 
-	return &Logger{zap: zapLogger}, nil
+	return zapLogger, nil
 }
 
+// Debug log messages at the debug level
 func Debug(msg string, fields ...zap.Field) {
-	logger.zap.Debug(msg, fields...)
+	logger.Debug(msg, fields...)
+	sync()
 }
 
+// Info log messages at the info level
 func Info(msg string, fields ...zap.Field) {
-	logger.zap.Info(msg, fields...)
+	logger.Info(msg, fields...)
+	sync()
 }
 
+// Warn log messages at the warn level
 func Warn(msg string, fields ...zap.Field) {
-	logger.zap.Warn(msg, fields...)
+	logger.Warn(msg, fields...)
+	sync()
 }
 
+// Error log messages at the error level
 func Error(msg string, fields ...zap.Field) {
-	logger.zap.Error(msg, fields...)
+	logger.Error(msg, fields...)
+	sync()
 }
 
+// Fatal log messages at the fatal level
 func Fatal(msg string, fields ...zap.Field) {
-	logger.zap.Fatal(msg, fields...)
+	logger.Fatal(msg, fields...)
+	sync()
 }
 
-func WithFields(fields ...zap.Field) *Logger {
-	return &Logger{zap: logger.zap.With(fields...)}
-}
-
-func SetLevel(level zapcore.Level) {
-	logger.zap.Core().Enabled(level)
-}
-
-func Sync() error {
-	return logger.zap.Sync()
+func sync() error {
+	return logger.Sync()
 }

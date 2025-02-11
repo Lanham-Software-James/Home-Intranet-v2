@@ -33,6 +33,7 @@ services:
       BACKEND_SECRET: ${SECRET}
       BACKEND_HOST: ${BACKEND_HOST}
       BACKEND_ALLOWED_HOSTS: ${BACKEND_ALLOWED_HOSTS}
+      BACKEND_PROD_FLAG: ${BACKEND_PROD_FLAG}
 
     depends_on:
       - db
