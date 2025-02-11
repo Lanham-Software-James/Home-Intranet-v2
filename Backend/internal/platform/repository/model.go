@@ -9,7 +9,7 @@ import (
 
 // Model is the basic values for all records persisted
 type Model struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt time.Time          `bson:"updated_at" json:"updated_at"`
 }
