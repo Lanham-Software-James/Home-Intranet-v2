@@ -9,7 +9,7 @@ import (
 
 // Author is the type for authors in our library
 type Author struct {
-	repository.Model `bson:",inline" json:",inline"`
+	repository.Model `bson:",inline" json:"-"`
 	FirstName        string `bson:"first_name" json:"first_name"`
 	MiddleName       string `bson:"middle_name" json:"middle_name"`
 	LastName         string `bson:"last_name" json:"last_name"`
