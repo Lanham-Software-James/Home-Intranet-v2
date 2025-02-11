@@ -1,5 +1,5 @@
-// Package models stores all of our models for the library module
-package models
+// Package repository servers as the wrapper for our data persistance packages
+package repository
 
 import (
 	"time"
