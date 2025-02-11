@@ -3,12 +3,12 @@ package main
 
 import (
 	"Home-Intranet-v2-Backend/cmd/routers"
-	"os"
+	"Home-Intranet-v2-Backend/internal/platform/config"
 
 	"net/http"
 )
 
 func main() {
 	router := routers.SetupRouter()
-	http.ListenAndServe(os.Getenv("BACKEND_HOST"), router)
+	http.ListenAndServe(config.GetServerHost(), router)
 }

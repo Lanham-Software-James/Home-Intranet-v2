@@ -2,12 +2,11 @@
 package repository
 
 import (
+	"Home-Intranet-v2-Backend/internal/platform/config"
 	"Home-Intranet-v2-Backend/internal/platform/logger"
 	"Home-Intranet-v2-Backend/internal/platform/pluralizer"
 	"context"
 	"fmt"
-	"net/url"
-	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -19,10 +18,10 @@ import (
 
 // Connect is used to create a new connection to our MongoDB
 func Connect() (*mongo.Database, error) {
-	username := os.Getenv("DB_USERNAME")
-	password := url.QueryEscape(os.Getenv("DB_PASSWORD"))
-	host := os.Getenv("DB_HOST")
-	database := os.Getenv("DB_NAME")
+	username := config.GetDBUserName()
+	password := config.GetDBPassword()
+	host := config.GetDBHost()
+	database := config.GetDBName()
 
 	uri := fmt.Sprintf(`mongodb://%s:%s@%s:27017/?retryWrites=true&w=majority`, username, password, host)
 
