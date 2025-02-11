@@ -27,6 +27,7 @@ func LibraryRoutes(r *chi.Mux) {
 
 		r.Route("/books", func(r chi.Router) {
 			r.Get("/", handler.ListBooks)
+			r.Post("/", handler.CreateBook)
 		})
 	})
 }
