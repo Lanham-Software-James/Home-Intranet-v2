@@ -1,3 +1,4 @@
+// Package library contains all the controllers for the library functionality
 package library
 
 import (
@@ -13,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// CreateBook is the handler for adding a new book to the library
 func (handler Handler) CreateBook(w http.ResponseWriter, request *http.Request) {
 	var book models.Book
 
@@ -46,13 +48,14 @@ func (handler Handler) CreateBook(w http.ResponseWriter, request *http.Request) 
 			{Key: "first_name", Value: author.FirstName},
 			{Key: "middle_name", Value: author.MiddleName},
 			{Key: "last_name", Value: author.LastName},
-		}); err != nil && err.Error() != "mongo: no documents in result" {
+			{Key: "suffix", Value: author.Suffix},
+		}); err != nil && !handler.Repository.IsNotFoundError(err) {
 			logger.Error(fmt.Sprintf("Issue Finding Document. \nError: %+v", err))
 			response.InternalServerError(w, err)
 			return
 		}
 
-		if author.Model.ID.String() == `ObjectID("000000000000000000000000")` {
+		if author.Model.ID.IsZero() {
 			if err = handler.Repository.Create(request.Context(), &author); err != nil {
 				logger.Error(fmt.Sprintf("Issue creating author. \nError: %+v", err.Error()))
 				response.InternalServerError(w, err)
