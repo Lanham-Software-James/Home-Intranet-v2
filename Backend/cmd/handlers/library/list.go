@@ -5,12 +5,11 @@ import (
 	"Home-Intranet-v2-Backend/internal/library/models"
 	"Home-Intranet-v2-Backend/internal/platform/logger"
 	"Home-Intranet-v2-Backend/internal/platform/response"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // ListBooks returns a list of books based on the parameters the user enter
@@ -22,25 +21,34 @@ func (handler Handler) ListBooks(w http.ResponseWriter, request *http.Request) {
 	offsetString := values.Get("offset")
 	limitString := values.Get("limit")
 
-	// TODO: Handle filter, search
+	// TODO: Handle Seach and Filter
 
+	// Build sort map
 	if sortColumn == "" {
 		sortColumn = "title"
 	}
 
-	sort := 1
+	sortDirection := 1
 	if sortDirectionString == "desc" {
-		sort = -1
+		sortDirection = -1
 	}
 
+	sort := map[string]string{
+		"shelf":    "1",
+		sortColumn: strconv.Itoa(sortDirection),
+	}
+
+	// Get default offset value
 	if offsetString == "" {
 		offsetString = "0"
 	}
 
+	// Get default limit value
 	if limitString == "" {
 		limitString = "20"
 	}
 
+	// Convert to ints
 	offset, err := strconv.ParseInt(offsetString, 10, 64)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error converting offset to int: %v", err))
@@ -55,7 +63,8 @@ func (handler Handler) ListBooks(w http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	data, err := handler.Repository.List(request.Context(), &models.Book{}, bson.D{}, bson.D{{Key: "shelf", Value: 1}, {Key: sortColumn, Value: sort}}, offset, limit)
+	// Query
+	data, err := handler.Repository.List(request.Context(), &models.Book{}, map[string]string{}, sort, offset, limit)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Issue retriving books. \nError: %s", err.Error()))
 		response.InternalServerError(w, err)
@@ -63,22 +72,11 @@ func (handler Handler) ListBooks(w http.ResponseWriter, request *http.Request) {
 	}
 
 	var books []models.Book
-	for _, element := range data {
-		var book models.Book
-
-		bsonData, err := bson.Marshal(element)
-		if err != nil {
-			logger.Error(fmt.Sprintf("Error marshaling data: %s", err.Error()))
-			continue
-		}
-
-		err = bson.Unmarshal(bsonData, &book)
-		if err != nil {
-			logger.Error(fmt.Sprintf("Error unmarshaling data: %s", err.Error()))
-			continue
-		}
-
-		books = append(books, book)
+	err = json.Unmarshal(data, &books)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Error unmarshaling data: %s", err.Error()))
+		response.BadRequest(w, err)
+		return
 	}
 
 	response.SuccessResponse(w, books)

@@ -3,14 +3,17 @@ package repository
 
 import (
 	"Home-Intranet-v2-Backend/internal/platform/config"
-	"Home-Intranet-v2-Backend/internal/platform/logger"
 	"Home-Intranet-v2-Backend/internal/platform/pluralizer"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -23,18 +26,20 @@ func Connect() (*mongo.Database, error) {
 	host := config.GetDBHost()
 	database := config.GetDBName()
 
-	uri := fmt.Sprintf(`mongodb://%s:%s@%s:27017/?retryWrites=true&w=majority`, username, password, host)
+	uri := fmt.Sprintf("mongodb://%s:%s@%s", username, password, host)
 
 	clientOptions := options.Client().ApplyURI(uri)
-	client, err := mongo.Connect(context.Background(), clientOptions)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
+	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("Issue connecting to Mongo Client:\n %+v", err))
+		return nil, fmt.Errorf("issue connecting to Mongo Client: %w", err)
 	}
 
-	err = client.Ping(context.Background(), nil)
+	err = client.Ping(ctx, nil)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("Issue verifying Mongo Client connection:\n %+v", err))
+		return nil, fmt.Errorf("issue verifying Mongo Client connection: %w", err)
 	}
 
 	return client.Database(database), nil
@@ -78,7 +83,7 @@ func (db *Repository) Create(ctx context.Context, model interface{}) error {
 }
 
 // Read is used to find one document based on a filter
-func (db *Repository) Read(ctx context.Context, model interface{}, filter interface{}, result interface{}) error {
+func (db *Repository) Read(ctx context.Context, model interface{}, filter interface{}) error {
 	collectionName, err := getCollectionName(model)
 	if err != nil {
 		return err
@@ -86,7 +91,7 @@ func (db *Repository) Read(ctx context.Context, model interface{}, filter interf
 
 	collection := db.Mongo.Collection(collectionName)
 
-	if err = collection.FindOne(ctx, filter).Decode(result); err != nil {
+	if err = collection.FindOne(ctx, filter).Decode(model); err != nil {
 		return err
 	}
 
@@ -94,7 +99,7 @@ func (db *Repository) Read(ctx context.Context, model interface{}, filter interf
 }
 
 // List is used to list all documents in a collection
-func (db *Repository) List(ctx context.Context, model interface{}, filter interface{}, sort interface{}, offset int64, limit int64) ([]primitive.D, error) {
+func (db *Repository) List(ctx context.Context, model interface{}, filter map[string]string, sort map[string]string, offset int64, limit int64) ([]byte, error) {
 	collectionName, err := getCollectionName(model)
 	if err != nil {
 		return nil, err
@@ -103,25 +108,26 @@ func (db *Repository) List(ctx context.Context, model interface{}, filter interf
 	opts := options.Find()
 	opts.SetSkip(offset)
 	opts.SetLimit(limit)
-	opts.SetSort(sort)
+	opts.SetSort(buildBSON(sort))
 
 	collection := db.Mongo.Collection(collectionName)
 
-	cursor, err := collection.Find(ctx, filter, opts)
+	cursor, err := collection.Find(ctx, buildBSON(filter), opts)
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
-	var results []primitive.D
-	if err = cursor.All(ctx, &results); err != nil {
+	var bsonResults []bson.M
+	if err = cursor.All(ctx, &bsonResults); err != nil {
 		return nil, err
 	}
-	return results, nil
+
+	return json.Marshal(bsonResults)
 }
 
 // Update is used to update a document in specified collection
-func (db *Repository) Update(ctx context.Context, model interface{}, filter interface{}, update interface{}) error {
+func (db *Repository) Update(ctx context.Context, model interface{}, filter interface{}) error {
 	collectionName, err := getCollectionName(model)
 	if err != nil {
 		return err
@@ -131,7 +137,7 @@ func (db *Repository) Update(ctx context.Context, model interface{}, filter inte
 
 	setDefaultFields(model, false)
 
-	_, err = collection.UpdateOne(ctx, filter, update)
+	_, err = collection.UpdateOne(ctx, filter, model)
 	if err != nil {
 		return err
 	}
@@ -154,6 +160,26 @@ func (db *Repository) Delete(ctx context.Context, model interface{}, filter inte
 	}
 
 	return nil
+}
+
+// IsNotFoundError verifies the type of error returning from a find query
+func (db *Repository) IsNotFoundError(err error) bool {
+	return errors.Is(err, mongo.ErrNoDocuments)
+}
+
+func buildBSON(data map[string]string) bson.D {
+	doc := bson.D{}
+
+	for key, value := range data {
+		num, err := strconv.Atoi(value)
+		if err == nil {
+			doc = append(doc, bson.E{Key: key, Value: num})
+		} else {
+			doc = append(doc, bson.E{Key: key, Value: value})
+		}
+	}
+
+	return doc
 }
 
 func getCollectionName(model interface{}) (string, error) {
