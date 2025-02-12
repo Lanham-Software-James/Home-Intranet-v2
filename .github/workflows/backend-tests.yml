@@ -4,13 +4,12 @@ on:
   pull_request:
     paths:
     - 'Backend/**'
-    - '.github/workflows/backend-tests.yml'
-    - '.github/workflows/backend-build.yml'
   push:
     branches: [ main ]
     paths:
     - 'Backend/**'
-    - '.github/backend-tests.yml'
+    - '.github/workflows/backend-tests.yml'
+    - '.github/workflows/backend-build.yml'
 
 jobs:
   test:
