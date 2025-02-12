@@ -1,0 +1,34 @@
+name: Test Backend
+
+on:
+  pull_request:
+    paths:
+    - 'Backend/**'
+  push:
+    branches: [ main ]
+    paths:
+    - 'Backend/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Install dependencies
+        run: go get .
+        working-directory: Backend
+
+      - name: Tidy Go Modules
+        run: go mod tidy
+        working-directory: Backend
+
+      - name: Test with the Go CLI
+        run: go test -v ./...
+        working-directory: Backend
