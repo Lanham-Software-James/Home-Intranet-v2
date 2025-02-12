@@ -15,7 +15,6 @@ services:
       - 27017:27017
     volumes:
       - home-intranet-db-data:/data/db
-      # - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
     restart: unless-stopped
 
   backend:
