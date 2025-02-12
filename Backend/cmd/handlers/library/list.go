@@ -55,7 +55,7 @@ func (handler Handler) ListBooks(w http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	data, err := handler.Repository.List(request.Context(), &models.Book{}, bson.D{}, bson.D{{Key: sortColumn, Value: sort}}, offset, limit)
+	data, err := handler.Repository.List(request.Context(), &models.Book{}, bson.D{}, bson.D{{Key: "shelf", Value: 1}, {Key: sortColumn, Value: sort}}, offset, limit)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Issue retriving books. \nError: %s", err.Error()))
 		response.InternalServerError(w, err)
