@@ -4,10 +4,12 @@ on:
   pull_request:
     paths:
     - 'Backend/**'
+    - '.github/backend-tests.yml'
   push:
     branches: [ main ]
     paths:
     - 'Backend/**'
+    - '.github/backend-tests.yml'
 
 jobs:
   test:
