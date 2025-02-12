@@ -65,38 +65,6 @@ services:
   #   restart: unless-stopped
 
 
-  ##########################
-  # Jenkins Configurations #
-  ##########################
-  jenkins:
-    image: jameslanham/home-intranet-jenkins:latest
-    container_name: jenkins
-    privileged: true
-    user: root
-    ports:
-      - 8081:8080
-      - 50000:50000
-    networks:
-      - home-intranet-jenkins
-    volumes:
-      - ./home-intranet/jenkins_configuration:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
-
-  agent:
-    image: jenkins/ssh-agent:jdk11
-    container_name: jenkins-agent
-    privileged: true
-    user: root
-    expose:
-      - 22
-    networks:
-      - home-intranet-jenkins
-    environment:
-      - JENKINS_AGENT_SSH_PUBKEY=${JENKINS_PUBLIC_KEY}
-    restart: unless-stopped
-
-
   #########################
   # PiHole Configurations #
   #########################
@@ -139,7 +107,6 @@ services:
     networks:
       # - home-intranet-frontend
       - home-intranet-backend
-      - home-intranet-jenkins
       - home-intranet-pihole
     restart: unless-stopped
 
@@ -147,8 +114,6 @@ networks:
   home-intranet-backend:
     driver: bridge
   home-intranet-frontend:
-    driver: bridge
-  home-intranet-jenkins:
     driver: bridge
   home-intranet-pihole:
     driver: bridge
