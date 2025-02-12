@@ -2,7 +2,7 @@ name: Build and Push Backend Docker Image
 
 on:
   workflow_run:
-    workflows: ["Test Backend"]
+    workflows: ["Run Backend Unit Tests"]
     types:
       - completed
     branches: [ main ]
