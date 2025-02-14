@@ -1,8 +1,5 @@
 services:
   db:
-    ########################################
-    # Home Intranet Web App Configurations #
-    ########################################
     image: mongo:latest
     container_name: home-intranet-db
     environment:
@@ -24,27 +21,24 @@ services:
     image: jameslanham/home-intranet-backend:latest
     container_name: home-intranet-backend
     environment:
-
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
       DB_NAME: ${DB_NAME}
 
-      BACKEND_SECRET: ${SECRET}
       BACKEND_HOST: ${BACKEND_HOST}
       BACKEND_ALLOWED_HOSTS: ${BACKEND_ALLOWED_HOSTS}
       BACKEND_PROD_FLAG: ${BACKEND_PROD_FLAG}
 
+      VIRTUAL_HOST: "api-stuff.intranet.local"
+      VIRTUAL_PROTO: "http"
+      VIRTUAL_PORT: 3000
     depends_on:
       - db
     networks:
       - home-intranet-backend
       - home-intranet-frontend
-    ports:
-      - "3000:3000"
-      - "2345:2345"
-    volumes:
-      - "./Backend:/app"
+      - home-intranet-nginx
     restart: unless-stopped
 
   # frontend:
@@ -56,6 +50,7 @@ services:
   #     - backend
   #   networks:
   #     - home-intranet-frontend
+  #     - home-intranet-nginx
   #   ports:
   #     - "5173:5173"
   #   volumes:
@@ -64,28 +59,9 @@ services:
   #     - "./Frontend/static:/app/static"
   #   restart: unless-stopped
 
-
-  ########################
-  # NGINX Configurations #
-  ########################
-  nginx:
-    image: nginx:alpine
-    container_name: nginx-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./SSL:/etc/letsencrypt
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      # - home-intranet-frontend
-      - home-intranet-backend
-    restart: unless-stopped
-
 networks:
+  home-intranet-nginx:
+    external: true
   home-intranet-backend:
     driver: bridge
   home-intranet-frontend:
