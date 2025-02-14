@@ -1,25 +1,25 @@
 services:
   db:
     image: mongo:latest
-    container_name: home-intranet-trove-db
+    container_name: trove-db
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
       MONGO_INITDB_DATABASE: ${DB_NAME}
     networks:
-      - home-intranet-trove-backend
+      - trove-backend
     command:
       - '--logpath'
       - '/var/log/mongodb/mongod.log'
     ports:
       - 27017:27017
     volumes:
-      - home-intranet-trove-db-data:/data/db
+      - trove-db-data:/data/db
     restart: unless-stopped
 
   backend:
     image: jameslanham/home-intranet-backend:latest
-    container_name: home-intranet-trove-backend
+    container_name: trove-backend
     environment:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -36,8 +36,8 @@ services:
     depends_on:
       - db
     networks:
-      - home-intranet-trove-backend
-      - home-intranet-trove-frontend
+      - trove-backend
+      - trove-frontend
       - home-intranet-nginx
     restart: unless-stopped
 
@@ -62,10 +62,10 @@ services:
 networks:
   home-intranet-nginx:
     external: true
-  home-intranet-trove-backend:
+  trove-backend:
     driver: bridge
-  home-intranet-trove-frontend:
+  trove-frontend:
     driver: bridge
 
 volumes:
-  home-intranet-trove-db-data:
+  trove-db-data:
