@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         SERVER_IP = '192.168.0.39'
-        DEPLOY_DIR = '/opt/stacks/stuff'
+        DEPLOY_DIR = '/opt/stacks/trove'
         CREDENTIALS_ID = 'home-intranet-server-ssh'
     }
     stages {
