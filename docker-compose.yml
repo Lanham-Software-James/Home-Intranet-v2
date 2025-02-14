@@ -23,17 +23,14 @@ services:
       target: dev
     container_name: home-intranet-backend
     environment:
-
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
       DB_NAME: ${DB_NAME}
 
-      BACKEND_SECRET: ${SECRET}
       BACKEND_HOST: ${BACKEND_HOST}
       BACKEND_ALLOWED_HOSTS: ${BACKEND_ALLOWED_HOSTS}
       BACKEND_PROD_FLAG: ${BACKEND_PROD_FLAG}
-
     depends_on:
       - db
     networks:
