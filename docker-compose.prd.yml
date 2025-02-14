@@ -1,7 +1,7 @@
 services:
   db:
     image: mongo:latest
-    container_name: home-intranet-db
+    container_name: home-intranet-trove-db
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -14,12 +14,12 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - home-intranet-db-data:/data/db
+      - home-intranet-trove-db-data:/data/db
     restart: unless-stopped
 
   backend:
     image: jameslanham/home-intranet-backend:latest
-    container_name: home-intranet-backend
+    container_name: home-intranet-trove-backend
     environment:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -30,20 +30,20 @@ services:
       BACKEND_ALLOWED_HOSTS: ${BACKEND_ALLOWED_HOSTS}
       BACKEND_PROD_FLAG: ${BACKEND_PROD_FLAG}
 
-      VIRTUAL_HOST: "api-stuff.intranet.local"
+      VIRTUAL_HOST: "api-trove.intranet.local"
       VIRTUAL_PROTO: "http"
       VIRTUAL_PORT: 3000
     depends_on:
       - db
     networks:
-      - home-intranet-backend
-      - home-intranet-frontend
+      - home-intranet-trove-backend
+      - home-intranet-trove-frontend
       - home-intranet-nginx
     restart: unless-stopped
 
   # frontend:
   #   image: jameslanham/home-intranet-frontend:latest
-  #   container_name: home-intranet-frontend
+  #   container_name: home-intranet-trove-frontend
   #   environment:
   #     API_URL: ${API_URL}
   #   depends_on:
@@ -62,10 +62,10 @@ services:
 networks:
   home-intranet-nginx:
     external: true
-  home-intranet-backend:
+  home-intranet-trove-backend:
     driver: bridge
-  home-intranet-frontend:
+  home-intranet-trove-frontend:
     driver: bridge
 
 volumes:
-  home-intranet-db-data:
+  home-intranet-trove-db-data:
